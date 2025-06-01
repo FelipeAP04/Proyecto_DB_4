@@ -14,6 +14,13 @@ const {
   eliminarCliente
 } = require('../controllers/componente.controller');
 
+const {
+  obtenerCompras,
+  obtenerVistaCompras,
+  crearCompra,
+  actualizarCompra,
+  eliminarCompra
+} = require('../controllers/compra.controller');
 
 router.get('/componentes', obtenerComponentes); // GET para el crud
 router.get('/componentes/vista', obtenerVistaComponentes); // GET vista
@@ -26,5 +33,10 @@ router.get('/clientes', obtenerClientes); // GET all clients
 router.post('/clientes', crearCliente); // POST create client
 router.put('/clientes/:id', actualizarCliente); // PUT update client
 router.delete('/clientes/:id', eliminarCliente); // DELETE client
+router.get('/compras', obtenerCompras); // GET all compras
+router.get('/compras/vista', obtenerVistaCompras); // GET vista SQL
+router.post('/compras', crearCompra); // POST create compra
+router.put('/compras/:id', actualizarCompra); // PUT update compra
+router.delete('/compras/:id', eliminarCompra); // DELETE compra
 
 module.exports = router;
