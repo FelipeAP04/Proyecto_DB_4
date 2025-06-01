@@ -302,18 +302,25 @@ body {
 
 .contenedor {
   padding: 2rem;
+  text-align: center;
 }
 
 .flex {
   display: flex;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.items-center {
+  justify-content: center;
   align-items: center;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.text-2xl {
+  font-size: 2rem;
+}
+
+.font-bold {
+  font-weight: bold;
 }
 
 .mb-4 {

@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "postgres",
-    "password": "Neko1508",
+    "password": "Rotom3-18",
     "database": "tienda_componentes_prueba2",
     "host": "127.0.0.1",
     "dialect": "postgres"

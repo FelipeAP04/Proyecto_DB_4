@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import ComponenteCRUD from './ComponenteCRUD';
 import VistaComponentes from './VistaComponentes';
+import ClientesCRUD from './ClientesCRUD';
 
 const MenuPrincipal = () => {
-  const [vistaActual, setVistaActual] = useState('crud'); 
+  const [vistaActual, setVistaActual] = useState('crud');
 
   return (
     <div className="menu-principal-container">
@@ -20,10 +21,22 @@ const MenuPrincipal = () => {
         >
           Ver Componentes
         </button>
+        <button
+          className={`menu-btn ${vistaActual === 'clientes' ? 'active' : ''}`}
+          onClick={() => setVistaActual('clientes')}
+        >
+          Ver Clientes
+        </button>
       </nav>
 
       <div className="contenido-vista">
-        {vistaActual === 'crud' ? <ComponenteCRUD /> : <VistaComponentes />}
+        {vistaActual === 'crud' ? (
+          <ComponenteCRUD />
+        ) : vistaActual === 'vista' ? (
+          <VistaComponentes />
+        ) : (
+          <ClientesCRUD />
+        )}
       </div>
     </div>
   );

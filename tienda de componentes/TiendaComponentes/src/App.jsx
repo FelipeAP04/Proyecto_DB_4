@@ -1,12 +1,21 @@
-import MenuPrincipal from './components/MenuPrincipal'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
+import ComponenteCRUD from './components/ComponenteCRUD';
+import ClientesCRUD from './components/ClientesCRUD';
 
 function App() {
-
   return (
-    <div className="App">
-      <MenuPrincipal />
-    </div>
-  )
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/componentes" element={<ComponenteCRUD />} />
+          <Route path="/clientes" element={<ClientesCRUD />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
 export default App;

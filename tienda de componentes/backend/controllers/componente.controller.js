@@ -1,4 +1,4 @@
-const { Componente, EspecificacionComponente, TipoComponente } = require('../models');
+const { Componente, EspecificacionComponente, TipoComponente, Cliente } = require('../models');
 
 // GET vista de componentes
 const obtenerComponentes = async (req, res) => {
@@ -64,7 +64,6 @@ async function obtenerVistaComponentes(req, res) {
   }
 }
 
-// POST crear componente con especificaciones
 const crearComponente = async (req, res) => {
   const {
     codigo_serie,
@@ -100,13 +99,11 @@ const crearComponente = async (req, res) => {
 };
 
 
-// PUT actualizar
 const actualizarComponente = async (req, res) => {
   try {
     const { id } = req.params;
     const { codigo_serie, nombre, descripcion, id_tipo_componente, precio, disponible, especificaciones } = req.body;
 
-    // Actualizar el componente principal
     const [updated] = await Componente.update(
       { codigo_serie, nombre, descripcion, id_tipo_componente, precio, disponible },
       { where: { id } }
@@ -116,12 +113,9 @@ const actualizarComponente = async (req, res) => {
       return res.status(404).json({ message: 'Componente no encontrado' });
     }
 
-    // Manejar especificaciones
     if (especificaciones && especificaciones.length > 0) {
-      // Eliminar especificaciones existentes
       await EspecificacionComponente.destroy({ where: { id_componente: id } });
 
-      // Crear nuevas especificaciones
       const nuevasEspecificaciones = especificaciones.map(esp => ({
         id_componente: id,
         especificacion: esp.especificacion,
@@ -139,17 +133,14 @@ const actualizarComponente = async (req, res) => {
 };
 
 
-// DELETE
 const eliminarComponente = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // eliminar especificaciones del componente
     await EspecificacionComponente.destroy({
       where: { id_componente: id }
     });
 
-    // eliminar el componente
     await Componente.destroy({
       where: { id }
     });
@@ -166,11 +157,90 @@ const obtenerTipos =  async (req, res) => {
   res.json(tipos);
 };
 
+const obtenerVistaClientes = async (req, res) => {
+  const { sequelize } = require('../models/index');
+  try {
+    const [clientes] = await sequelize.query('SELECT * FROM vista_clientes');
+    res.json(clientes);
+  } catch (error) {
+    console.error('Error al obtener vista de clientes:', error);
+    res.status(500).json({ error: 'Error al obtener clientes' });
+  }
+};
+
+const obtenerClientes = async (req, res) => {
+  try {
+    const clientes = await Cliente.findAll({
+      include: ['telefonos', 'direccion']
+    });
+    res.json(clientes);
+  } catch (error) {
+    console.error('Error al obtener clientes:', error);
+    res.status(500).json({ error: 'Error al obtener clientes' });
+  }
+};
+
+const crearCliente = async (req, res) => {
+  const { nombre, apellido, correo, telefono, direccion } = req.body;
+  try {
+    const cliente = await Cliente.create(
+      { nombre, apellido, correo, estado: true },
+      { include: ['telefonos', 'direccion'] }
+    );
+    await cliente.createTelefono({ telefono });
+    await cliente.createDireccion(direccion);
+    res.status(201).json(cliente);
+  } catch (error) {
+    console.error('Error al crear cliente:', error);
+    res.status(500).json({ error: 'Error al crear cliente' });
+  }
+};
+
+const actualizarCliente = async (req, res) => {
+  const { id } = req.params;
+  const { nombre, apellido, correo, telefono, direccion } = req.body;
+  try {
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
+
+    await cliente.update({ nombre, apellido, correo });
+    await cliente.telefonos[0].update({ telefono });
+    await cliente.direccion.update(direccion);
+
+    res.json({ message: 'Cliente actualizado correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar cliente:', error);
+    res.status(500).json({ error: 'Error al actualizar cliente' });
+  }
+};
+
+const eliminarCliente = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
+
+    await cliente.telefonos[0].destroy();
+    await cliente.direccion.destroy();
+    await cliente.destroy();
+
+    res.json({ message: 'Cliente eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar cliente:', error);
+    res.status(500).json({ error: 'Error al eliminar cliente' });
+  }
+};
+
 module.exports = {
   obtenerComponentes,
   obtenerVistaComponentes,
   crearComponente,
   actualizarComponente,
   eliminarComponente,
-  obtenerTipos
+  obtenerTipos,
+  obtenerVistaClientes,
+  obtenerClientes,
+  crearCliente,
+  actualizarCliente,
+  eliminarCliente
 };
