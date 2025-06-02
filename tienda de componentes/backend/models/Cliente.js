@@ -21,23 +21,29 @@ module.exports = (sequelize, DataTypes) => {
         isEmail: true,
       },
     },
-    telefono: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    direccion: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    fecha_registro: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     estado: {
-      type: DataTypes.STRING,
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: 'Activo',
     },
   }, {
     tableName: 'clientes',
     timestamps: false,
   });
+
+  Cliente.associate = (models) => {
+    Cliente.hasMany(models.TelefonoCliente, {
+      foreignKey: 'id_cliente',
+      as: 'telefonos',
+    });
+    Cliente.hasOne(models.DireccionCliente, {
+      foreignKey: 'id_cliente',
+      as: 'direccionCliente',
+    });
+  };
 
   return Cliente;
 };

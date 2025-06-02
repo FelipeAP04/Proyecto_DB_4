@@ -182,14 +182,64 @@ const obtenerClientes = async (req, res) => {
 
 const crearCliente = async (req, res) => {
   const { nombre, apellido, correo, telefono, direccion } = req.body;
+
   try {
-    const cliente = await Cliente.create(
-      { nombre, apellido, correo, estado: true },
-      { include: ['telefonos', 'direccion'] }
-    );
-    await cliente.createTelefono({ telefono });
-    await cliente.createDireccion(direccion);
-    res.status(201).json(cliente);
+    // Create main client record
+    const cliente = await Cliente.create({
+      nombre,
+      apellido,
+      correo,
+      fecha_registro: new Date(),
+      estado: true
+    });
+
+    let successCount = 1;
+    let errors = [];
+
+    // Create phone if provided
+    if (telefono) {
+      try {
+        await sequelize.models.TelefonoCliente.create({
+          id_cliente: cliente.id,
+          telefono
+        });
+        successCount++;
+      } catch (err) {
+        errors.push('Error al guardar teléfono');
+      }
+    }
+
+    // Create address if provided
+    if (direccion) {
+      try {
+        await sequelize.query(
+          'INSERT INTO direccion_cliente (id_cliente, direccion) VALUES ($1, ($2, $3, $4)::direccion)',
+          {
+            bind: [
+              cliente.id,
+              direccion.calle || '',
+              direccion.ciudad || '',
+              direccion.codigo_postal || ''
+            ],
+            type: sequelize.QueryTypes.INSERT
+          }
+        );
+        successCount++;
+      } catch (err) {
+        errors.push('Error al guardar dirección');
+      }
+    }
+
+    // If at least the main client data was saved, consider it a success
+    if (successCount > 0) {
+      res.status(201).json({
+        message: 'Cliente creado correctamente',
+        cliente,
+        warnings: errors.length > 0 ? errors : undefined
+      });
+    } else {
+      res.status(500).json({ error: 'Error al crear cliente' });
+    }
   } catch (error) {
     console.error('Error al crear cliente:', error);
     res.status(500).json({ error: 'Error al crear cliente' });
@@ -198,14 +248,61 @@ const crearCliente = async (req, res) => {
 
 const actualizarCliente = async (req, res) => {
   const { id } = req.params;
-  const { nombre, apellido, correo, telefono, direccion } = req.body;
-  try {
-    const cliente = await Cliente.findByPk(id);
-    if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
+  const { nombre, apellido, correo, telefono, direccion, estado } = req.body;
 
-    await cliente.update({ nombre, apellido, correo });
-    await cliente.telefonos[0].update({ telefono });
-    await cliente.direccion.update(direccion);
+  try {
+    const cliente = await Cliente.findByPk(id, {
+      include: ['telefonos', 'direccionCliente']
+    });
+
+    if (!cliente) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+
+    // Update main client data
+    await cliente.update({
+      nombre,
+      apellido,
+      correo,
+      estado
+    });
+
+    // Update phone if provided
+    if (telefono) {
+      if (cliente.telefonos && cliente.telefonos.length > 0) {
+        await cliente.telefonos[0].update({ telefono });
+      } else {
+        await sequelize.models.TelefonoCliente.create({
+          id_cliente: id,
+          telefono
+        });
+      }
+    }
+
+    // Update address if provided
+    if (direccion) {
+      const { calle = '', ciudad = '', codigo_postal = '' } = direccion;
+      // Format the address as a proper PostgreSQL record string
+      const direccionStr = `(${calle},${ciudad},${codigo_postal})`;
+
+      if (cliente.direccionCliente) {
+        await sequelize.query(
+          'UPDATE direccion_cliente SET direccion = $1::direccion WHERE id = $2',
+          {
+            bind: [direccionStr, cliente.direccionCliente.id],
+            type: sequelize.QueryTypes.UPDATE
+          }
+        );
+      } else {
+        await sequelize.query(
+          'INSERT INTO direccion_cliente (id_cliente, direccion) VALUES ($1, $2::direccion)',
+          {
+            bind: [id, direccionStr],
+            type: sequelize.QueryTypes.INSERT
+          }
+        );
+      }
+    }
 
     res.json({ message: 'Cliente actualizado correctamente' });
   } catch (error) {
@@ -218,16 +315,17 @@ const eliminarCliente = async (req, res) => {
   const { id } = req.params;
   try {
     const cliente = await Cliente.findByPk(id);
-    if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
+    if (!cliente) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
 
-    await cliente.telefonos[0].destroy();
-    await cliente.direccion.destroy();
-    await cliente.destroy();
+    // Soft delete - just update the estado to false
+    await cliente.update({ estado: false });
 
-    res.json({ message: 'Cliente eliminado correctamente' });
+    res.json({ message: 'Cliente desactivado correctamente' });
   } catch (error) {
-    console.error('Error al eliminar cliente:', error);
-    res.status(500).json({ error: 'Error al eliminar cliente' });
+    console.error('Error al desactivar cliente:', error);
+    res.status(500).json({ error: 'Error al desactivar cliente' });
   }
 };
 

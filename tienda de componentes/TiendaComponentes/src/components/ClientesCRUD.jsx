@@ -7,14 +7,8 @@ const ClientesCRUD = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [porPagina] = useState(5);
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [nuevoCliente, setNuevoCliente] = useState({
-    nombre: '',
-    apellido: '',
-    correo: '',
-    telefono: '',
-    direccion: '',
-    estado: 'Activo',
-  });
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
   const obtenerClientes = async () => {
     try {
@@ -31,41 +25,75 @@ const ClientesCRUD = () => {
   }, []);
 
   const eliminarCliente = async (id) => {
+    if (!window.confirm('¿Está seguro de eliminar este cliente?')) return;
+    
     try {
       await axios.delete(`/api/clientes/${id}`);
       alert('Cliente eliminado correctamente');
       obtenerClientes();
     } catch (err) {
-      console.error('Error al intentar eliminar un cliente', err);
-      alert('Ocurrió un error al eliminar el cliente.');
+      console.error('Error al eliminar cliente:', err);
+      alert('Error: ' + (err.response?.data?.error || 'Error al eliminar el cliente'));
     }
   };
 
-  const agregarCliente = async (cliente) => {
+  const guardarCliente = async () => {
     try {
-      // Ensure required fields are present
-      if (!cliente.nombre || !cliente.apellido || !cliente.correo) {
-        alert('Nombre, apellido y correo son obligatorios');
+      // Validate required fields
+      if (!clienteSeleccionado.nombre || !clienteSeleccionado.apellido || !clienteSeleccionado.correo) {
+        alert('Por favor complete los campos obligatorios (nombre, apellido y correo)');
         return;
       }
 
-      // Send the request
+      // Prepare data for submission
       const clienteData = {
-        nombre: cliente.nombre,
-        apellido: cliente.apellido,
-        correo: cliente.correo,
-        telefono: cliente.telefono || null,
-        direccion: cliente.direccion || null,
-        estado: cliente.estado || 'Activo',
+        nombre: clienteSeleccionado.nombre,
+        apellido: clienteSeleccionado.apellido,
+        correo: clienteSeleccionado.correo,
+        telefono: clienteSeleccionado.telefono,
+        direccion: {
+          calle: clienteSeleccionado.calle || '',
+          ciudad: clienteSeleccionado.ciudad || 'Ciudad de Guatemala',
+          codigo_postal: clienteSeleccionado.codigo_postal || ''
+        },
+        estado: true
       };
 
-      await axios.post('/api/clientes', clienteData);
-      alert('Cliente agregado correctamente');
-      obtenerClientes(); // Refresh the list
+      const response = modoEdicion
+        ? await axios.put(`/api/clientes/${clienteSeleccionado.cliente_id}`, clienteData)
+        : await axios.post('/api/clientes', clienteData);
+
+      if (response.data.warnings) {
+        alert(`Cliente ${modoEdicion ? 'actualizado' : 'agregado'} con advertencias:\n${response.data.warnings.join('\n')}`);
+      } else {
+        alert(`Cliente ${modoEdicion ? 'actualizado' : 'agregado'} correctamente`);
+      }
+
+      setModalAbierto(false);
+      obtenerClientes();
     } catch (err) {
-      console.error('Error al agregar cliente', err);
-      alert(`Ocurrió un error al agregar el cliente: ${err.response?.data?.error || err.message}`);
+      console.error('Error al guardar cliente:', err);
+      alert('Error: ' + (err.response?.data?.error || 'Error al guardar el cliente'));
     }
+  };
+
+  const abrirModalNuevo = () => {
+    setClienteSeleccionado({
+      cliente_nombre: '',
+      cliente_apellido: '',
+      cliente_correo: '',
+      cliente_telefono: '',
+      cliente_direccion: '',
+      cliente_estado: 'Activo',
+    });
+    setModoEdicion(false);
+    setModalAbierto(true);
+  };
+
+  const abrirModalEditar = (cliente) => {
+    setClienteSeleccionado(cliente);
+    setModoEdicion(true);
+    setModalAbierto(true);
   };
 
   const totalPaginas = Math.ceil(clientes.length / porPagina);
@@ -84,7 +112,7 @@ const ClientesCRUD = () => {
         <h2 className="text-2xl font-bold">Clientes</h2>
         <button
           className="btn btn-principal flex items-center gap-2"
-          onClick={() => setModalAbierto(true)}
+          onClick={abrirModalNuevo}
         >
           <FiPlus /> Agregar
         </button>
@@ -96,6 +124,8 @@ const ClientesCRUD = () => {
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -107,10 +137,16 @@ const ClientesCRUD = () => {
                 <td>{cliente.cliente_nombre}</td>
                 <td>{cliente.cliente_apellido}</td>
                 <td>{cliente.cliente_correo}</td>
+                <td>{cliente.cliente_telefono || 'N/A'}</td>
+                <td>{cliente.cliente_direccion || 'N/A'}</td>
                 <td>{cliente.cliente_estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
                   <div className="flex gap-2">
-                    <button className="btn-edit" title="Editar">
+                    <button
+                      onClick={() => abrirModalEditar(cliente)}
+                      className="btn-edit"
+                      title="Editar"
+                    >
                       <FiEdit />
                     </button>
                     <button
@@ -126,7 +162,7 @@ const ClientesCRUD = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5" className="text-center text-red-500">
+              <td colSpan="7" className="text-center text-red-500">
                 No hay clientes para mostrar.
               </td>
             </tr>
@@ -134,7 +170,6 @@ const ClientesCRUD = () => {
         </tbody>
       </table>
 
-      {/* Paginación */}
       <div className="div-paginacion">
         <button
           className="btn-paginacion"
@@ -158,58 +193,66 @@ const ClientesCRUD = () => {
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2 className="modal-title">Agregar Cliente</h2>
+            <h2 className="modal-title">{modoEdicion ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
             <div className="modal-form">
               <input
                 type="text"
                 placeholder="Nombre"
-                value={nuevoCliente.nombre}
-                onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre: e.target.value })}
+                value={clienteSeleccionado.nombre || ''}
+                onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, nombre: e.target.value })}
                 className="input-field-text"
               />
               <input
                 type="text"
                 placeholder="Apellido"
-                value={nuevoCliente.apellido}
-                onChange={(e) => setNuevoCliente({ ...nuevoCliente, apellido: e.target.value })}
+                value={clienteSeleccionado.apellido || ''}
+                onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, apellido: e.target.value })}
                 className="input-field-text"
               />
               <input
                 type="email"
-                placeholder="Correo"
-                value={nuevoCliente.correo}
-                onChange={(e) => setNuevoCliente({ ...nuevoCliente, correo: e.target.value })}
+                placeholder="Correo electrónico"
+                value={clienteSeleccionado.correo || ''}
+                onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, correo: e.target.value })}
                 className="input-field-text"
               />
               <input
-                type="text"
+                type="tel"
                 placeholder="Teléfono"
-                value={nuevoCliente.telefono}
-                onChange={(e) => setNuevoCliente({ ...nuevoCliente, telefono: e.target.value })}
+                value={clienteSeleccionado.telefono || ''}
+                onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, telefono: e.target.value })}
                 className="input-field-text"
               />
-              <input
-                type="text"
-                placeholder="Dirección"
-                value={nuevoCliente.direccion}
-                onChange={(e) => setNuevoCliente({ ...nuevoCliente, direccion: e.target.value })}
-                className="input-field-text"
-              />
-              <select
-                value={nuevoCliente.estado}
-                onChange={(e) => setNuevoCliente({ ...nuevoCliente, estado: e.target.value })}
-                className="input-field-select"
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-              </select>
+              <div className="direccion-fields">
+                <input
+                  type="text"
+                  placeholder="Calle y número"
+                  value={clienteSeleccionado.calle || ''}
+                  onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, calle: e.target.value })}
+                  className="input-field-text"
+                />
+                <input
+                  type="text"
+                  placeholder="Ciudad"
+                  value={clienteSeleccionado.ciudad || ''}
+                  onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, ciudad: e.target.value })}
+                  className="input-field-text"
+                />
+                <input
+                  type="text"
+                  placeholder="Código Postal"
+                  value={clienteSeleccionado.codigo_postal || ''}
+                  onChange={(e) => setClienteSeleccionado({ ...clienteSeleccionado, codigo_postal: e.target.value })}
+                  className="input-field-text"
+                />
+              </div>
             </div>
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setModalAbierto(false)}>
                 Cancelar
               </button>
-              <button className="btn-save" onClick={agregarCliente}>
-                Guardar
+              <button className="btn-save" onClick={guardarCliente}>
+                {modoEdicion ? 'Actualizar' : 'Guardar'}
               </button>
             </div>
           </div>
