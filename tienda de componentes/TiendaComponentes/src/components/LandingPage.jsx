@@ -21,6 +21,12 @@ const LandingPage = () => {
           >
             Gestionar Clientes
           </button>
+          <button
+            className="btn btn-principal landing-btn"
+            onClick={() => navigate('/compras')}
+          >
+            Gestionar Compras
+          </button>
         </div>
       </div>
     </div>
