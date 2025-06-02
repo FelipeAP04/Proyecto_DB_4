@@ -11,7 +11,8 @@ const {
   obtenerClientes,
   crearCliente,
   actualizarCliente,
-  eliminarCliente
+  eliminarCliente, 
+  obtenerStockComponente
 } = require('../controllers/componente.controller');
 
 const {
@@ -38,5 +39,6 @@ router.get('/compras/vista', obtenerVistaCompras); // GET vista SQL
 router.post('/compras', crearCompra); // POST create compra
 router.put('/compras/:id', actualizarCompra); // PUT update compra
 router.delete('/compras/:id', eliminarCompra); // DELETE compra
+router.get('/componentes/:id/stock', obtenerStockComponente); // GET stock por id
 
 module.exports = router;

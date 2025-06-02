@@ -329,6 +329,26 @@ const eliminarCliente = async (req, res) => {
   }
 };
 
+const obtenerStockComponente = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [resultado] = await sequelize.query(
+      'SELECT obtener_stock_componente(:id) AS stock',
+      {
+        replacements: { id },
+        type: sequelize.QueryTypes.SELECT
+      }
+    );
+
+    res.json({ id_componente: id, stock: resultado.stock });
+  } catch (error) {
+    console.error('Error al obtener stock del componente:', error);
+    res.status(500).json({ error: 'Error al obtener stock del componente' });
+  }
+};
+
+
 module.exports = {
   obtenerComponentes,
   obtenerVistaComponentes,
@@ -340,5 +360,6 @@ module.exports = {
   obtenerClientes,
   crearCliente,
   actualizarCliente,
-  eliminarCliente
+  eliminarCliente, 
+  obtenerStockComponente
 };
