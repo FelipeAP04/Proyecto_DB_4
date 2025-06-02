@@ -4,10 +4,12 @@
 
 # en el backend
 npm install -g nodemon
+npm install dotenv --save
 
 # en el frontend
 
 npm install --save-dev vite
+npm install react-router-dom
 
 
 # Primer paso
