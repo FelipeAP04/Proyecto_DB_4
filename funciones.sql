@@ -29,3 +29,17 @@ BEGIN
   VALUES (id_componente_input, cantidad_input);
 END;
 $$ LANGUAGE plpgsql;
+
+--Para obtener todos los nombres
+CREATE OR REPLACE FUNCTION obtener_todos_los_proveedores()
+RETURNS TABLE (
+  id_proveedor INT,
+  nombre VARCHAR
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT id_proveedor, nombre
+  FROM proveedores
+  ORDER BY nombre;
+END;
+$$ LANGUAGE plpgsql;

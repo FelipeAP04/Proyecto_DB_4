@@ -13,6 +13,8 @@ yarn-error.log
 dist/
 build/
 
+.env
+
 # Ignorar archivos del editor
 .vscode/
 .idea/
