@@ -20,25 +20,34 @@ const {
   obtenerVistaCompras,
   crearCompra,
   actualizarCompra,
-  eliminarCompra
+  eliminarCompra,
+  obtenerProveedores  // <-- aquí agregas la nueva función
 } = require('../controllers/compra.controller');
 
-router.get('/componentes', obtenerComponentes); // GET para el crud
-router.get('/componentes/vista', obtenerVistaComponentes); // GET vista
-router.post('/componentes', crearComponente); // POST con especificaciones
-router.put('/componentes/:id', actualizarComponente); // PUT update
-router.delete('/componentes/:id', eliminarComponente); // DELETE
-router.get('/tipos', obtenerTipos); //GET tipos de componentes
-router.get('/clientes/vista', obtenerVistaClientes); // GET vista clientes
-router.get('/clientes', obtenerClientes); // GET all clients
-router.post('/clientes', crearCliente); // POST create client
-router.put('/clientes/:id', actualizarCliente); // PUT update client
-router.delete('/clientes/:id', eliminarCliente); // DELETE client
-router.get('/compras', obtenerCompras); // GET all compras
-router.get('/compras/vista', obtenerVistaCompras); // GET vista SQL
-router.post('/compras', crearCompra); // POST create compra
-router.put('/compras/:id', actualizarCompra); // PUT update compra
-router.delete('/compras/:id', eliminarCompra); // DELETE compra
-router.get('/componentes/:id/stock', obtenerStockComponente); // GET stock por id
+// Rutas componentes
+router.get('/componentes', obtenerComponentes);
+router.get('/componentes/vista', obtenerVistaComponentes);
+router.post('/componentes', crearComponente);
+router.put('/componentes/:id', actualizarComponente);
+router.delete('/componentes/:id', eliminarComponente);
+router.get('/tipos', obtenerTipos);
+router.get('/clientes/vista', obtenerVistaClientes);
+router.get('/clientes', obtenerClientes);
+router.post('/clientes', crearCliente);
+router.put('/clientes/:id', actualizarCliente);
+router.delete('/clientes/:id', eliminarCliente);
+
+// Rutas compras
+router.get('/compras', obtenerCompras);
+router.get('/compras/vista', obtenerVistaCompras);
+router.post('/compras', crearCompra);
+router.put('/compras/:id', actualizarCompra);
+router.delete('/compras/:id', eliminarCompra);
+
+// Nueva ruta para proveedores
+router.get('/proveedores', obtenerProveedores);  // <-- aquí
+
+// Stock por id componente
+router.get('/componentes/:id/stock', obtenerStockComponente);
 
 module.exports = router;

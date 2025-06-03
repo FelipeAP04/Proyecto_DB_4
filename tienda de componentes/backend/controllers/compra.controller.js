@@ -1,13 +1,17 @@
-const { Compra, Cliente, Componente } = require('../models');
+const { Compra, DetalleCompra, Proveedor, Componente } = require('../models');
 const { sequelize } = require('../models');
 
-// Obtener todas las compras (con relaciones)
+// Obtener todas las compras con proveedor y sus componentes desde los detalles
 const obtenerCompras = async (req, res) => {
   try {
     const compras = await Compra.findAll({
       include: [
-        { model: Cliente, as: 'cliente' },
-        { model: Componente, as: 'componente' }
+        { model: Proveedor, as: 'proveedor' },
+        {
+          model: DetalleCompra,
+          as: 'detalles',
+          include: [{ model: Componente, as: 'componente' }]
+        }
       ]
     });
     res.json(compras);
@@ -17,7 +21,7 @@ const obtenerCompras = async (req, res) => {
   }
 };
 
-// Obtener compras desde la vista SQL
+// Obtener desde la vista SQL
 const obtenerVistaCompras = async (req, res) => {
   try {
     const [compras] = await sequelize.query('SELECT * FROM vista_compras');
@@ -28,34 +32,55 @@ const obtenerVistaCompras = async (req, res) => {
   }
 };
 
-// Crear una nueva compra
+// Crear una compra con detalles
 const crearCompra = async (req, res) => {
-  const { id_cliente, id_componente, cantidad, fecha_compra } = req.body;
+  const { id_proveedor, total, detalles } = req.body;
 
+  // Validar que detalles sea un array no vacío
+  if (!Array.isArray(detalles) || detalles.length === 0) {
+    return res.status(400).json({ error: 'Se requiere al menos un detalle para la compra' });
+  }
+
+  const t = await sequelize.transaction();
   try {
+    // Crear compra
     const compra = await Compra.create({
-      id_cliente,
-      id_componente,
-      cantidad,
-      fecha_compra: fecha_compra || new Date()
-    });
+      id_proveedor,
+      total,
+      fecha: new Date()
+    }, { transaction: t });
 
-    res.status(201).json(compra);
+    // Crear detalles usando compra.id (no compra.id_compra)
+    for (const detalle of detalles) {
+      const sub_total = detalle.cantidad * detalle.precio_unitario;
+      await DetalleCompra.create({
+        id_compra: compra.id,       // <-- aquí el cambio clave
+        id_componente: detalle.id_componente,
+        cantidad: detalle.cantidad,
+        precio_unitario: detalle.precio_unitario,
+        sub_total
+      }, { transaction: t });
+    }
+
+    await t.commit();
+    res.status(201).json({ message: 'Compra creada correctamente', compraId: compra.id });
   } catch (error) {
+    await t.rollback();
     console.error('Error al crear compra:', error);
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: 'Error al crear compra' });
   }
 };
 
-// Actualizar una compra existente
+// Actualizar solo la compra (sin detalles)
 const actualizarCompra = async (req, res) => {
   const { id } = req.params;
-  const { id_cliente, id_componente, cantidad, fecha_compra } = req.body;
+  const { id_proveedor, total } = req.body;
 
   try {
+    // Actualizar compra por id (clave primaria)
     const [updated] = await Compra.update(
-      { id_cliente, id_componente, cantidad, fecha_compra },
-      { where: { id } }
+      { id_proveedor, total },
+      { where: { id: id } }  // <-- cambiar id_compra por id
     );
 
     if (!updated) return res.status(404).json({ message: 'Compra no encontrada' });
@@ -67,26 +92,53 @@ const actualizarCompra = async (req, res) => {
   }
 };
 
-// Eliminar una compra
+// Eliminar compra y sus detalles
 const eliminarCompra = async (req, res) => {
   const { id } = req.params;
 
+  const t = await sequelize.transaction();
+
   try {
-    const deleted = await Compra.destroy({ where: { id } });
+    // Primero eliminar los detalles de compra asociados
+    await DetalleCompra.destroy({ where: { id_compra: id }, transaction: t });
 
-    if (!deleted) return res.status(404).json({ message: 'Compra no encontrada' });
+    // Luego eliminar la compra
+    const deleted = await Compra.destroy({ where: { id: id }, transaction: t });
 
+    if (!deleted) {
+      await t.rollback();
+      return res.status(404).json({ message: 'Compra no encontrada' });
+    }
+
+    await t.commit();
     res.json({ message: 'Compra eliminada correctamente' });
+
   } catch (error) {
+    await t.rollback();
     console.error('Error al eliminar compra:', error);
     res.status(500).json({ error: 'Error al eliminar compra' });
   }
 };
+
+const obtenerProveedores = async (req, res) => {
+  try {
+    const proveedores = await Proveedor.findAll({
+      attributes: ['id', 'nombre'],
+      order: [['nombre', 'ASC']]
+    });
+    res.json(proveedores);
+  } catch (error) {
+    console.error('Error al obtener proveedores:', error);
+    res.status(500).json({ error: 'Error al obtener proveedores' });
+  }
+};
+
 
 module.exports = {
   obtenerCompras,
   obtenerVistaCompras,
   crearCompra,
   actualizarCompra,
-  eliminarCompra
+  eliminarCompra,
+  obtenerProveedores   // <-- exporta la nueva función
 };
