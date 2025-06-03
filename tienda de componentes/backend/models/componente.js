@@ -45,6 +45,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'id_componente',
       as: 'especificaciones',
     });
+
+    Componente.hasMany(models.Inventario, {
+      foreignKey: 'id_componente',
+      as: 'movimientosInventario',
+    });
   };
 
   return Componente;

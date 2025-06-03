@@ -1,4 +1,4 @@
-const { Componente, EspecificacionComponente, TipoComponente, Cliente } = require('../models');
+const { Componente, EspecificacionComponente, TipoComponente, Cliente, Inventario } = require('../models');
 
 // GET vista de componentes
 const obtenerComponentes = async (req, res) => {
@@ -132,25 +132,43 @@ const actualizarComponente = async (req, res) => {
   }
 };
 
-
 const eliminarComponente = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await EspecificacionComponente.destroy({
-      where: { id_componente: id }
-    });
+    // Verifica si el componente tiene inventario asociado
+    const registroInventario = await Inventario.findOne({ where: { id_componente: id } });
 
-    await Componente.destroy({
-      where: { id }
-    });
+    if (registroInventario) {
+      return res.status(400).json({
+        mensaje: 'No se puede eliminar el componente porque todavía tiene inventario asociado.'
+      });
+    }
+
+    // Elimina especificaciones si existen
+    await EspecificacionComponente.destroy({ where: { id_componente: id } });
+
+    // Elimina el componente
+    const eliminado = await Componente.destroy({ where: { id } });
+
+    if (eliminado === 0) {
+      return res.status(404).json({ mensaje: 'Componente no encontrado' });
+    }
 
     res.status(200).json({ mensaje: 'Componente eliminado correctamente' });
   } catch (error) {
     console.error('Error al eliminar componente:', error);
-    res.status(500).json({ mensaje: 'Error al eliminar componente' });
+
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(400).json({
+        mensaje: 'No se puede eliminar el componente porque está referenciado por otra tabla.'
+      });
+    }
+
+    res.status(500).json({ mensaje: 'Error del servidor al eliminar componente' });
   }
 };
+
 
 const obtenerTipos =  async (req, res) => {
   const tipos = await TipoComponente.findAll();

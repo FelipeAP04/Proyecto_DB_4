@@ -40,7 +40,8 @@ const ComponenteCRUD = () => {
       obtenerComponentes();
     } catch (err) {
       console.error('Error al intentar eliminar un componente', err);
-      alert('Ocurrió un error al eliminar el componente.');
+      const mensaje = err.response?.data?.mensaje || err.response?.data?.message || err.response?.data?.error || 'Ocurrió un error al eliminar el componente.';
+      alert(mensaje);
     }
   };
 

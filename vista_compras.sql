@@ -1,7 +1,6 @@
 CREATE OR REPLACE VIEW vista_compras AS
 SELECT 
   c.id AS compra_id,
-  c.id_cliente,
   c.fecha AS fecha_compra,
   c.total,
   c.id_proveedor,
