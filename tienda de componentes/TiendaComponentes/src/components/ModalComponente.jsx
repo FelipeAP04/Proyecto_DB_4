@@ -14,6 +14,8 @@ const ModalComponente = ({ isOpen, onClose, modoEdicion, componente, onGuardado 
   });
 
   const [tipos, setTipos] = useState([]);
+  const [errores, setErrores] = useState({});
+  
 
   useEffect(() => {
     if (componente) {
@@ -51,7 +53,31 @@ const ModalComponente = ({ isOpen, onClose, modoEdicion, componente, onGuardado 
     });
   };
 
+  const validar = () => {
+    const nuevosErrores = {};
+
+    if (!form.codigo_serie.trim()) nuevosErrores.codigo_serie = 'El código es obligatorio';
+    if (!form.nombre.trim()) nuevosErrores.nombre = 'El nombre es obligatorio';
+    if (!form.descripcion.trim()) nuevosErrores.descripcion = 'La descripción es obligatoria';
+    if (!form.precio || isNaN(form.precio) || form.precio <= 0) nuevosErrores.precio = 'El precio debe ser un número válido y mayor a 0';
+    if (!form.id_tipo_componente) nuevosErrores.id_tipo_componente = 'Debes seleccionar un tipo de componente';
+
+    form.especificaciones.forEach((e, i) => {
+      if (!e.especificacion.trim() || !e.valor.trim()) {
+        nuevosErrores[`especificacion_${i}`] = 'Especificación y valor no pueden estar vacíos';
+      }
+    });
+
+    setErrores(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
+
+
   const enviar = async () => {
+    if (!validar()) {
+      alert('Por favor, corrige los errores antes de guardar.');
+      return;
+    }
     try {
       if (modoEdicion) {
         await axios.put(`/api/componentes/${form.id}`, form);
@@ -79,9 +105,13 @@ const ModalComponente = ({ isOpen, onClose, modoEdicion, componente, onGuardado 
 
         <div className="modal-form">
           <input type="text" name="codigo_serie" placeholder="Código" value={form.codigo_serie} onChange={handleChange} className="input-field-text" />
+          {errores.codigo_serie && <p className="error-text">{errores.codigo_serie}</p>}
           <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} className="input-field-text" />
+          {errores.nombre && <p className="error-text">{errores.nombre}</p>}
           <input type="text" name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} className="input-field-text" />
+          {errores.descripcion && <p className="error-text">{errores.descripcion}</p>}
           <input type="number" name="precio" placeholder="Precio" value={form.precio} onChange={handleChange} className="input-field-text" />
+          {errores.precio && <p className="error-text">{errores.precio}</p>}
 
           <select name="id_tipo_componente" value={form.id_tipo_componente} onChange={handleChange} className="input-field">
             <option value="">Seleccionar tipo</option>
@@ -89,6 +119,7 @@ const ModalComponente = ({ isOpen, onClose, modoEdicion, componente, onGuardado 
               <option key={t.id} value={t.id}>{t.tipo}</option>
             ))}
           </select>
+          {errores.id_tipo_componente && <p className="error-text">{errores.id_tipo_componente}</p>}
 
           <label className="checkbox-field">
             <input type="checkbox" name="disponible" checked={form.disponible} onChange={handleChange} />
@@ -113,6 +144,10 @@ const ModalComponente = ({ isOpen, onClose, modoEdicion, componente, onGuardado 
                   onChange={(ev) => handleEspecificacionChange(i, 'valor', ev.target.value)}
                   className="input-field"
                 />
+                 {/* Mostrar error solo si existe para esta especificación */}
+                 {errores[`especificacion_${i}`] && (
+                   <p className="error-text">{errores[`especificacion_${i}`]}</p>
+                 )}
               </div>
             ))}
             <button onClick={agregarEspecificacion} className="add-spec-btn">+ Agregar especificación</button>

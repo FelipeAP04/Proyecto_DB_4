@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import ComponenteCRUD from './ComponenteCRUD';
 import VistaComponentes from './VistaComponentes';
-import ClientesCRUD from './ClientesCRUD';
 
-const MenuPrincipal = () => {
+const ReportesMenu = () => {
   const [vistaActual, setVistaActual] = useState('crud');
 
   return (
@@ -13,13 +12,19 @@ const MenuPrincipal = () => {
           className={`menu-btn ${vistaActual === 'crud' ? 'active' : ''}`}
           onClick={() => setVistaActual('crud')}
         >
-          Administrar Componentes
+          Inventario 
         </button>
         <button 
           className={`menu-btn ${vistaActual === 'vista' ? 'active' : ''}`}
           onClick={() => setVistaActual('vista')}
         >
-          Ver Componentes
+          Reporte de compras
+        </button>
+        <button 
+          className={`menu-btn ${vistaActual === 'vista' ? 'active' : ''}`}
+          onClick={() => setVistaActual('vista')}
+        >
+          Clientes frecuentes
         </button>
       </nav>
 
@@ -34,4 +39,4 @@ const MenuPrincipal = () => {
   );
 };
 
-export default MenuPrincipal;
+export default ReportesMenu;

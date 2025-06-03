@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/tarjeta-madre.png';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -27,7 +28,15 @@ const LandingPage = () => {
           >
             Gestionar Compras
           </button>
+          <button
+            className="btn btn-principal landing-btn"
+            onClick={() => navigate('/reportes')}
+          >
+            Reportes
+          </button>
         </div>
+
+        <img src={logo} className="logo" alt='logo de la empresa'/>
       </div>
     </div>
   );

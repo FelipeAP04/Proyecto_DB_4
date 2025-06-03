@@ -108,7 +108,7 @@ const ClientesCRUD = () => {
 
   return (
     <div className="contenedor">
-      <div className="flex justify-between items-center mb-4">
+      <div className="add-action-container">
         <h2 className="text-2xl font-bold">Clientes</h2>
         <button
           className="btn btn-principal flex items-center gap-2"
