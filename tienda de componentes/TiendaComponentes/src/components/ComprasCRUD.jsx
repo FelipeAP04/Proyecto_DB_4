@@ -12,6 +12,21 @@ const ComprasCRUD = () => {
     total: 0,
     detalles: [{ id_componente: '', cantidad: '', precio_unitario: '' }]
   });
+  const [proveedores, setProveedores] = useState([]);
+
+  useEffect(() => {
+    const fetchProveedores = async () => {
+      try {
+        const res = await axios.get('/api/proveedores');
+        setProveedores(res.data);
+      } catch (err) {
+        console.error('Error al cargar proveedores', err);
+      }
+    };
+
+    fetchProveedores();
+  }, []);
+
 
   // Maneja el cambio en los campos de detalle
   const manejarCambioDetalle = (index, campo, valor) => {
@@ -261,13 +276,18 @@ const ComprasCRUD = () => {
           <div className="modal-content">
             <h2 className="modal-title">{modoEdicion ? 'Editar Compra' : 'Agregar Compra'}</h2>
             <div className="modal-form">
-                <input
+                <select
                   className="input-field-text"
-                  type="number"
-                  placeholder="ID Proveedor"
                   value={nuevaCompra.id_proveedor}
                   onChange={(e) => setNuevaCompra({ ...nuevaCompra, id_proveedor: e.target.value })}
-                />
+                >
+                  <option value="">Seleccione un proveedor</option>
+                  {proveedores.map((prov) => (
+                    <option key={prov.id} value={prov.id}>
+                      {prov.nombre}
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="number"
                   placeholder="Total"

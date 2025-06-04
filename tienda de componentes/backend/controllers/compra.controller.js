@@ -140,5 +140,5 @@ module.exports = {
   crearCompra,
   actualizarCompra,
   eliminarCompra,
-  obtenerProveedores   // <-- exporta la nueva función
+  obtenerProveedores 
 };

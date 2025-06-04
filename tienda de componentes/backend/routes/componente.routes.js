@@ -21,7 +21,7 @@ const {
   crearCompra,
   actualizarCompra,
   eliminarCompra,
-  obtenerProveedores 
+  obtenerProveedores
 } = require('../controllers/compra.controller');
 
 // Rutas componentes
@@ -45,7 +45,7 @@ router.put('/compras/:id', actualizarCompra);
 router.delete('/compras/:id', eliminarCompra);
 
 // Nueva ruta para proveedores
-router.get('/proveedores', obtenerProveedores);  // <-- aquí
+router.get('/proveedores', obtenerProveedores);  
 
 // Stock por id componente
 router.get('/componentes/:id/stock', obtenerStockComponente);
