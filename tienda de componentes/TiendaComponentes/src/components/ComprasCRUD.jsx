@@ -54,6 +54,7 @@ const ComprasCRUD = () => {
   const obtenerCompras = async () => {
     try {
       const res = await axios.get('/api/compras/vista');
+      console.log('Datos recibidos del backend:', res.data);
       const datos = res.data;
       const agrupadas = {};
       datos.forEach((fila) => {
@@ -258,38 +259,44 @@ const ComprasCRUD = () => {
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>{modoEdicion ? 'Editar Compra' : 'Agregar Compra'}</h2>
-            <input
-              type="number"
-              placeholder="ID Proveedor"
-              value={nuevaCompra.id_proveedor}
-              onChange={(e) => setNuevaCompra({ ...nuevaCompra, id_proveedor: e.target.value })}
-            />
-            <input
-              type="number"
-              placeholder="Total"
-              value={nuevaCompra.total}
-              readOnly
-              className="input-disabled"
-              title="El total se calcula automáticamente"
-            />
-
+            <h2 className="modal-title">{modoEdicion ? 'Editar Compra' : 'Agregar Compra'}</h2>
+            <div className="modal-form">
+                <input
+                  className="input-field-text"
+                  type="number"
+                  placeholder="ID Proveedor"
+                  value={nuevaCompra.id_proveedor}
+                  onChange={(e) => setNuevaCompra({ ...nuevaCompra, id_proveedor: e.target.value })}
+                />
+                <input
+                  type="number"
+                  placeholder="Total"
+                  value={nuevaCompra.total}
+                  readOnly
+                  className="input-disabled"
+                  title="El total se calcula automáticamente"
+                />
+            </div>
+            
             <h4 className="mt-4">Detalles de la compra</h4>
             {nuevaCompra.detalles.map((detalle, index) => (
-              <div key={index} className="flex gap-2 items-center mb-2">
+              <div key={index} className="modal-form-horizontal">
                 <input
+                  className="input-field-text"
                   type="number"
                   placeholder="ID Componente"
                   value={detalle.id_componente}
                   onChange={(e) => manejarCambioDetalle(index, 'id_componente', e.target.value)}
                 />
                 <input
+                  className="input-field-text"
                   type="number"
                   placeholder="Cantidad"
                   value={detalle.cantidad}
                   onChange={(e) => manejarCambioDetalle(index, 'cantidad', e.target.value)}
                 />
                 <input
+                  className="input-field-text"
                   type="number"
                   placeholder="Precio Unitario"
                   value={detalle.precio_unitario}
@@ -306,8 +313,8 @@ const ComprasCRUD = () => {
             </button>
 
             <div className="modal-actions mt-4">
-              <button onClick={cerrarModal}>Cancelar</button>
-              <button onClick={modoEdicion ? actualizarCompra : agregarCompra}>
+              <button className="btn-cancel" onClick={cerrarModal}>Cancelar</button>
+              <button className='btn-save' onClick={modoEdicion ? actualizarCompra : agregarCompra}>
                 {modoEdicion ? 'Actualizar' : 'Guardar'}
               </button>
             </div>

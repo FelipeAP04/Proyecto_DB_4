@@ -21,7 +21,7 @@ const {
   crearCompra,
   actualizarCompra,
   eliminarCompra,
-  obtenerProveedores  // <-- aquí agregas la nueva función
+  obtenerProveedores 
 } = require('../controllers/compra.controller');
 
 // Rutas componentes
