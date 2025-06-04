@@ -24,7 +24,8 @@ const {
   obtenerProveedores
 } = require('../controllers/compra.controller');
 
-// Rutas componentes
+const reportesController = require('../controllers/reportes.controller');
+
 router.get('/componentes', obtenerComponentes);
 router.get('/componentes/vista', obtenerVistaComponentes);
 router.post('/componentes', crearComponente);
@@ -37,17 +38,18 @@ router.post('/clientes', crearCliente);
 router.put('/clientes/:id', actualizarCliente);
 router.delete('/clientes/:id', eliminarCliente);
 
-// Rutas compras
 router.get('/compras', obtenerCompras);
 router.get('/compras/vista', obtenerVistaCompras);
 router.post('/compras', crearCompra);
 router.put('/compras/:id', actualizarCompra);
 router.delete('/compras/:id', eliminarCompra);
 
-// Nueva ruta para proveedores
 router.get('/proveedores', obtenerProveedores);  
 
-// Stock por id componente
 router.get('/componentes/:id/stock', obtenerStockComponente);
+
+router.get('/reportes/compras', reportesController.reporteCompras);
+router.get('/reportes/inventario', reportesController.reporteInventario);
+router.get('/reportes/clientes', reportesController.reporteClientes);
 
 module.exports = router;

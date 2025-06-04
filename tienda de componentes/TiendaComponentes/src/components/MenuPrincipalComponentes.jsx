@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import ComponenteCRUD from './ComponenteCRUD';
 import VistaComponentes from './VistaComponentes';
 import ClientesCRUD from './ClientesCRUD';
+import ReporteCompras from './ReporteCompras';
+import ReporteInventario from './ReporteInventario';
+import ReporteClientes from './ReporteClientes';
 
 const MenuPrincipal = () => {
   const [vistaActual, setVistaActual] = useState('crud');
@@ -21,6 +24,24 @@ const MenuPrincipal = () => {
         >
           Ver Componentes
         </button>
+        <button 
+          className={`menu-btn ${vistaActual === 'reporteCompras' ? 'active' : ''}`}
+          onClick={() => setVistaActual('reporteCompras')}
+        >
+          Reporte Compras
+        </button>
+        <button 
+          className={`menu-btn ${vistaActual === 'reporteInventario' ? 'active' : ''}`}
+          onClick={() => setVistaActual('reporteInventario')}
+        >
+          Reporte Inventario
+        </button>
+        <button 
+          className={`menu-btn ${vistaActual === 'reporteClientes' ? 'active' : ''}`}
+          onClick={() => setVistaActual('reporteClientes')}
+        >
+          Reporte Clientes
+        </button>
       </nav>
 
       <div className="contenido-vista">
@@ -28,7 +49,13 @@ const MenuPrincipal = () => {
           <ComponenteCRUD />
         ) : vistaActual === 'vista' ? (
           <VistaComponentes />
-        )  : null} 
+        ) : vistaActual === 'reporteCompras' ? (
+          <ReporteCompras />
+        ) : vistaActual === 'reporteInventario' ? (
+          <ReporteInventario />
+        ) : vistaActual === 'reporteClientes' ? (
+          <ReporteClientes />
+        ) : null}
       </div>
     </div>
   );
