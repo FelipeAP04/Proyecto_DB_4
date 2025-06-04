@@ -1,39 +1,42 @@
 import React, { useState } from 'react';
-import ComponenteCRUD from './ComponenteCRUD';
-import VistaComponentes from './VistaComponentes';
+import ReporteClientes from './ReporteClientes';
+import ReporteCompras from './ReporteCompras';
+import ReporteInventario from './ReporteInventario'
 
 const ReportesMenu = () => {
-  const [vistaActual, setVistaActual] = useState('crud');
+  const [vistaActual, setVistaActual] = useState('inventario');
 
   return (
     <div className="menu-principal-container">
       <nav className="menu-principal-nav">
         <button 
           className={`menu-btn ${vistaActual === 'crud' ? 'active' : ''}`}
-          onClick={() => setVistaActual('crud')}
+          onClick={() => setVistaActual('inventario')}
         >
           Inventario 
         </button>
         <button 
           className={`menu-btn ${vistaActual === 'vista' ? 'active' : ''}`}
-          onClick={() => setVistaActual('vista')}
+          onClick={() => setVistaActual('compras')}
         >
           Reporte de compras
         </button>
         <button 
           className={`menu-btn ${vistaActual === 'vista' ? 'active' : ''}`}
-          onClick={() => setVistaActual('vista')}
+          onClick={() => setVistaActual('clientes')}
         >
           Clientes frecuentes
         </button>
       </nav>
 
       <div className="contenido-vista">
-        {vistaActual === 'crud' ? (
-          <ComponenteCRUD />
-        ) : vistaActual === 'vista' ? (
-          <VistaComponentes />
-        )  : null} 
+        {vistaActual === 'inventario' ? (
+          <ReporteInventario />
+        ) : vistaActual === 'compras' ? (
+          <ReporteCompras />
+        ) : vistaActual === 'clientes' ? (  
+          <ReporteClientes /> 
+        ) : null} 
       </div>
     </div>
   );

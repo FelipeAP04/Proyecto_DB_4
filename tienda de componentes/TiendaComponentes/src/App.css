@@ -27,7 +27,8 @@ body {
 }
 
 /* === Botones === */
-.btn {
+.btn,
+.button-report {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.5rem;
@@ -36,7 +37,7 @@ body {
   transition: background-color 0.3s;
 }
 
-.btn-principal, .btn-save, .add-spec-btn {
+.btn-principal, .btn-save, .add-spec-btn, .button-report {
   background-color: var(--color-principal);
   color: var(--color-blanco);
 }
@@ -45,7 +46,7 @@ body {
   background-color: var(--color-secundario);
 }
 
-.btn-save:hover {
+.btn-save:hover, .button-report:hover {
   background-color: var(--color-secundario);
 }
 
@@ -253,7 +254,6 @@ body {
   cursor: pointer;
 }
 
-
 .input-field-text {
   width: 100%;
   max-width: 542px;
@@ -267,6 +267,51 @@ body {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 0.4rem;
+}
+
+.filtros-reporte {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.input-field-report,
+.select-report {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.4rem;
+  background-color: var(--color-blanco);
+  font-size: 0.9rem;
+}
+
+.input-field-report {
+  min-width: 150px;
+  flex: 1;
+}
+
+.select-report {
+  min-width: 180px;
+  flex: 1;
+}
+
+/* Estilos específicos para los inputs de tipo number */
+.input-field-report[type="number"] {
+  max-width: 120px;
+}
+
+/* Opcional: estilos para el hover y focus */
+.input-field-report:hover,
+.select-report:hover {
+  border-color: #999;
+}
+
+.input-field-report:focus,
+.select-report:focus {
+  outline: none;
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .checkbox-field {
