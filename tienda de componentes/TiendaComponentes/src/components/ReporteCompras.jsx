@@ -16,7 +16,7 @@ const ReporteCompras = () => {
     try {
       const res = await axios.get('/api/reportes/compras', { params });
       setResultados(res.data);
-    } catch (err) {
+    } catch {
       alert('Error al buscar');
     }
     setLoading(false);

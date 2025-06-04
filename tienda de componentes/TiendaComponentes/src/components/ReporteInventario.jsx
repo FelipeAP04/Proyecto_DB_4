@@ -16,7 +16,7 @@ const ReporteInventario = () => {
     try {
       const res = await axios.get('/api/reportes/inventario', { params });
       setResultados(res.data);
-    } catch (err) {
+    } catch {
       alert('Error al buscar');
     }
     setLoading(false);

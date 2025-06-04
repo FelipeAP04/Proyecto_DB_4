@@ -12,8 +12,8 @@ const obtenerComponentes = async (req, res) => {
     console.log(JSON.stringify(componentes, null, 2));
     res.json(componentes);
   } catch (error) {
+    console.error('Error real al obtener componentes:', error); 
     res.status(500).json({ error: 'Error al obtener componentes' });
-    console.error('Error al obtener componentes:', error);
   }
 };
 
